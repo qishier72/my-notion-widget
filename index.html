@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notion Daily Spark</title>
+    <!-- 引入基础库 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+        .font-serif-sc { font-family: 'Noto Serif SC', serif; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar { display: none; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // ==========================================
+        // 📝 这里是你的【句子仓库】，可以直接在这里增删
+        // ==========================================
+        const MY_QUOTES = [
+            { text: "生活不在别处，当下即是全部。", author: "我的主页" },
+            { text: "种一棵树最好的时间是十年前，其次是现在。", author: "古谚" },
+            { text: "每一个不曾起舞的日子，都是对生命的辜负。", author: "尼采" },
+            { text: "保持热爱，山海皆可平。", author: "收集" },
+            { text: "如果你在寻找那个能改变你一生的人，请照照镜子。", author: "提醒" },
+            { text: "答案不在远处，而在你迈出的每一步里。", author: "坚持" },
+            { text: "在这里输入你的新句子...", author: "作者名字" }
+        ];
+
+        const { useState, useEffect, useCallback } = React;
+
+        // 简易版 Lucide 图标组件
+        const Icon = ({ name, size = 16, className = "" }) => {
+            useEffect(() => { lucide.createIcons(); }, [name]);
+            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
+
+        const App = () => {
+            const [quote, setQuote] = useState(MY_QUOTES[0]);
+            const [theme, setTheme] = useState('light'); // light, dark, notion
+            const [showList, setShowList] = useState(false);
+            const [isAnimating, setIsAnimating] = useState(false);
+
+            const nextQuote = useCallback(() => {
+                setIsAnimating(true);
+                setTimeout(() => {
+                    const random = MY_QUOTES[Math.floor(Math.random() * MY_QUOTES.length)];
+                    setQuote(random);
+                    setIsAnimating(false);
+                }, 300);
+            }, []);
+
+            useEffect(() => {
+                nextQuote();
+            }, []);
+
+            const themeClasses = {
+                light: "bg-white text-gray-800 border-gray-200",
+                dark: "bg-[#191919] text-gray-100 border-gray-700",
+                notion: "bg-[#F7F6F3] text-gray-800 border-gray-200"
+            };
+
+            return (
+                <div className={`min-h-screen w-full flex items-center justify-center p-2 transition-colors duration-500`}>
+                    <div className={`relative w-full max-w-md p-6 rounded-xl border shadow-sm transition-all duration-300 ${themeClasses[theme]} ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+                        
+                        {/* 句子显示区 */}
+                        <div className="flex flex-col space-y-4 min-h-[80px] justify-center">
+                            <div className="relative">
+                                <span className="absolute -top-6 -left-2 text-5xl opacity-10 select-none">“</span>
+                                <p className="text-lg font-serif-sc font-medium relative z-10 leading-relaxed text-center sm:text-left">
+                                    {quote.text}
+                                </p>
+                            </div>
+                            <div className="flex items-center justify-end space-x-2">
+                                <div className="h-px w-6 bg-gray-300 opacity-50"></div>
+                                <p className="text-xs font-inter opacity-60 italic">{quote.author}</p>
+                            </div>
+                        </div>
+
+                        {/* 底部控制栏 */}
+                        <div className="mt-6 flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-3">
+                            <div className="flex items-center space-x-1">
+                                <button onClick={nextQuote} className="p-2 hover:bg-black/5 rounded-lg transition-colors" title="换一个">
+                                    <Icon name="refresh-cw" size={14} className="opacity-60" />
+                                </button>
+                                <button onClick={() => setShowList(true)} className="p-2 hover:bg-black/5 rounded-lg transition-colors" title="查看全部">
+                                    <Icon name="list" size={14} className="opacity-60" />
+                                </button>
+                            </div>
+
+                            <div className="flex items-center space-x-1">
+                                <button onClick={() => setTheme(t => t === 'light' ? 'dark' : t === 'dark' ? 'notion' : 'light')} className="p-2 hover:bg-black/5 rounded-lg transition-colors">
+                                    <Icon name="settings" size={14} className="opacity-60" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 清单弹窗 */}
+                    {showList && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-fade-in">
+                            <div className="bg-white dark:bg-[#1e1e1e] w-full max-w-sm max-h-[70vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800">
+                                <div className="p-4 border-b flex justify-between items-center bg-gray-50 dark:bg-[#252525]">
+                                    <h3 className="font-bold text-sm">我的句子库 ({MY_QUOTES.length})</h3>
+                                    <button onClick={() => setShowList(false)} className="p-1 hover:bg-gray-200 rounded-full text-gray-500"><Icon name="x" size={18} /></button>
+                                </div>
+                                <div className="overflow-y-auto p-4 space-y-3">
+                                    {MY_QUOTES.map((q, i) => (
+                                        <div key={i} onClick={() => { setQuote(q); setShowList(false); }} className="p-3 rounded-lg border hover:border-blue-500 cursor-pointer transition-colors group">
+                                            <p className="text-sm mb-1 group-hover:text-blue-500">{q.text}</p>
+                                            <p className="text-[10px] opacity-40 text-right">— {q.author}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
