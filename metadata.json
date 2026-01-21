@@ -1,0 +1,5 @@
+{
+  "name": "Notion Spark - Daily Quote Widget",
+  "description": "A beautiful, minimalist widget for Notion that displays random meaningful quotes and can generate new ones using AI.",
+  "requestFramePermissions": []
+}
